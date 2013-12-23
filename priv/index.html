@@ -12,7 +12,7 @@
 
       $('#room').val(qs('room') || 'my-room');
 
-      websocket = new WebSocket("ws://localhost:8080/socket");
+      websocket = new WebSocket("ws://chat.zed-globe.com/socket");
 
       websocket.onopen = function() {
         $("#output").append('<p style="color: #aaa;">Connected to server</p>');
