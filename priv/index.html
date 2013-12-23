@@ -1,0 +1,120 @@
+<html>
+<head>
+  <title>Chat Server Experiment with Elixir</title>
+  <script src="/assets/js/jquery.min.js"></script>
+  <script>
+    $(function () {
+      function qs(key) {
+          key = key.replace(/[*+?^$.\[\]{}()|\\\/]/g, "\\$&"); // escape RegEx meta chars
+          var match = location.search.match(new RegExp("[?&]"+key+"=([^&]+)(&|$)"));
+          return match && decodeURIComponent(match[1].replace(/\+/g, " "));
+      }
+
+      $('#room').val(qs('room') || 'my-room');
+
+      websocket = new WebSocket("ws://localhost:8080/socket");
+
+      websocket.onopen = function() {
+        $("#output").append('<p style="color: #aaa;">Connected to server</p>');
+      };
+
+      websocket.onmessage = function(e) {
+        var data = JSON.parse(e.data);
+
+        if (data.message == 'message') {
+          $('#output').append('<div style="color: blue;"><strong>' + data.data.username + '</strong>: ' + data.data.message + '</div>');
+        } else if (data.message === 'leave') {
+          $("#output").append('<div style="color: #aaa;"><strong>' + data.data.username + '</strong> left the room!</div>');
+        }
+        
+      };
+
+      websocket.onerror = function (e) {
+        $('#output').append('<div style="color: red;">> ERROR: ' + e.data + '</div>');
+      };
+
+      $('#btn-join').on('click', function (e) {
+        e.preventDefault();
+
+        var username = $('#username').val(),
+            room = $('#room').val();
+
+        if (username.length > 0 && room.length > 0) {
+          websocket.send(JSON.stringify({
+            message: 'join',
+            data: {room: room, username: username}
+          }));
+
+          $('#chat-login').hide();
+          $('#chat-room').show();
+        }
+      });
+
+      function sendMessage(message) {
+        websocket.send(JSON.stringify({
+          message: 'talk',
+          data: {message: message}
+        }));
+
+        $('#output').append('<div style="color: #666;">' + message + '</div>');
+      }
+
+      $('#btn-send').on('click', function (e) {
+        e.preventDefault();
+
+        var $message = $('#message'),
+            message = $message.val();
+
+        if (message.length > 0) {
+          sendMessage(message);
+          $message.val('');
+        }
+      });
+
+      $('#message').on('keyup', function (e) {
+        if (e.which === 13) {
+          var $message = $('#message'),
+              message = $message.val();
+
+          if ($('#message').length > 0) {
+            sendMessage(message);
+            $message.val('');
+          }
+        }
+      });
+
+      $('#btn-leave').on('click', function (e) {
+        e.preventDefault();
+
+        $('#message').val('');
+
+        websocket.send(JSON.stringify({
+          message: 'leave'
+        }));
+
+        $('#chat-login').show();
+        $('#chat-room').hide();
+      });
+    });
+  </script>
+</head>
+<body>
+  <div id="chat-login">
+    <div>
+      <label for="username">Username:</label>
+    </div>
+    <div><input type="text" id="username"></div>
+    <div><label for="room">Room:</label></div>
+    <div><input type="text" id="room"></div>
+    <div><input type="button" value="Join" id="btn-join"></div>
+  </div>
+  <div id="chat-room" style="display: none;">
+    <div>
+      <input type="text" id="message" />
+      <input type="button" value="Send" id="btn-send" />
+      <input type="button" value="Leave the room!" id="btn-leave" />
+    </div>
+    <div id="output"></div>
+  </div>
+</body>
+</html>
