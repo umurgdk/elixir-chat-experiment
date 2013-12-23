@@ -17,7 +17,7 @@ defmodule ChatExperiment do
                     [env: [dispatch: dispatch]])
 
             port -> {:ok, _} = :cowboy.start_http(:http, 100,
-                    [port: port],
+                    [port: binary_to_integer(port)],
                     [env: [dispatch: dispatch]])
         end
 
