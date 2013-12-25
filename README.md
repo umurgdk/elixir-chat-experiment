@@ -7,3 +7,7 @@ A chat server built on [cowboy](https://github.com/extend/cowboy). Its built as 
 mix deps.get
 mix run --no-halt
 ```
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/umurgdk/elixir-chat-experiment/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
